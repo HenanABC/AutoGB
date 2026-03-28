@@ -1,7 +1,4 @@
 # AutoGB
-Parameter-free adaptive granular-ball framework for interpretable risk modeling and selective prediction on tabular data
-
-# AutoGB
 
 **AutoGB** is a research prototype for **parameter-free adaptive granular-ball learning** on tabular data.
 
