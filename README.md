@@ -10,16 +10,14 @@ Unlike conventional models that directly learn a global decision boundary, AutoG
 
 ## Overview
 
-```mermaid
 flowchart LR
     A[Input Data] --> B[Granular Ball Partition]
-    B --> C[Local Structure Statistics]
-    C --> D[Feature Transformation φ(x)]
-    D --> E[Meta Model fθ]
-    E --> F[Calibration g]
-    F --> G[Risk-aware Prediction]
-    G --> H[Selective Prediction Analysis]
-```
+    B --> C[Ball-level Statistics]
+    C --> D[Feature Mapping]
+    D --> E[Meta Predictor]
+    E --> F[Probability Calibration]
+    F --> G[Risk-aware Output]
+    G --> H[Risk-Coverage Evaluation]
 
 ---
 
