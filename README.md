@@ -2,71 +2,174 @@
 
 **AutoGB** is a research prototype for **parameter-free adaptive granular-ball learning** on tabular data.
 
-Unlike conventional models that focus purely on classification accuracy, AutoGB is designed as a **risk-aware learning framework**, emphasizing interpretability, uncertainty, and selective prediction.
+It is designed as an **interpretable, risk-aware, and selective prediction framework**, rather than a purely accuracy-driven classifier.
+
+Unlike conventional models that directly learn a global decision boundary, AutoGB first constructs a set of **granular balls** to represent local data structure, then performs **feature transformation + meta-level prediction + calibration**.
 
 ---
 
-## 🚀 Motivation
+## Overview
 
-Most machine learning models aim to maximize accuracy, but in many real-world scenarios:
-
-* wrong predictions are costly,
-* uncertainty matters,
-* interpretability is required.
-
-AutoGB addresses this by shifting from **hard classification** to **risk-oriented modeling**.
-
----
-
-## 🧠 Core Idea
-
-AutoGB builds a structured learning pipeline based on **granular-ball representation**:
-
-```
-Data → Granular Balls → Meta Risk Aggregation → Calibration → Risk-aware Prediction
+```mermaid
+flowchart LR
+    A[Input Data] --> B[Granular Ball Partition]
+    B --> C[Local Structure Statistics]
+    C --> D[Feature Transformation φ(x)]
+    D --> E[Meta Model fθ]
+    E --> F[Calibration g]
+    F --> G[Risk-aware Prediction]
+    G --> H[Selective Prediction Analysis]
 ```
 
-### Key components:
+---
 
-* **Granular Ball Construction**
-  Adaptive partitioning of data into local regions (no manual hyperparameters)
+## Motivation
 
-* **Local Risk Modeling**
-  Each ball captures local distribution and risk characteristics
+Most machine learning models focus on maximizing accuracy. However, in many real-world scenarios:
 
-* **Meta-Level Aggregation**
-  Combines local signals into global predictions
+* incorrect predictions are costly
+* uncertainty must be considered
+* interpretability is required
+* abstaining can be safer than forcing a decision
 
-* **Calibration**
-  Improves probability reliability
-
-* **Selective Prediction**
-  Enables reject option based on risk thresholds
+AutoGB addresses this by shifting from **hard classification** to **risk-aware modeling**.
 
 ---
 
-## ✨ Highlights
+## Core Idea
 
-* ✅ Parameter-free adaptive partitioning
-* ✅ Interpretable region-based modeling
-* ✅ Risk-aware prediction (beyond classification)
-* ✅ Built-in support for selective prediction
-* ✅ Fully reproducible notebook prototype
+AutoGB separates the learning process into three stages:
 
----
+1. **Local structure construction (granular balls)**
+2. **Feature transformation based on local regions**
+3. **Standard supervised prediction + calibration**
 
-## 📊 What This Repository Contains
+This design enables:
 
-This repository provides a **single notebook implementation** of the AutoGB framework:
-
-* End-to-end pipeline
-* Multi-seed evaluation
-* Ablation study
-* Risk-coverage analysis
+* interpretable region-based modeling
+* flexible integration with existing models
+* support for selective prediction
 
 ---
 
-## ⚙️ How to Run
+## Mathematical Formulation
+
+Given a dataset
+
+$$
+\mathcal{D} = {(x_i, y_i)}_{i=1}^N, \qquad x_i \in \mathbb{R}^d
+$$
+
+AutoGB constructs a set of granular balls
+
+$$
+\mathcal{B} = {B_1, B_2, \dots, B_M}
+$$
+
+via recursive partitioning of the input space.
+
+### Granular Ball Statistics
+
+For each ball $B_m$:
+
+**Center**
+
+$$
+c_m = \frac{1}{|B_m|}\sum_{x_i \in B_m} x_i
+$$
+
+**Radius**
+
+$$
+r_m = \max_{x_i \in B_m} |x_i - c_m|_2
+$$
+
+**Local label ratio (binary case)**
+
+$$
+\rho_m = \frac{1}{|B_m|}\sum_{(x_i, y_i)\in B_m} \mathbf{1}(y_i = 1)
+$$
+
+These quantities summarize local geometric and statistical structure.
+
+### Feature Transformation
+
+For a new sample $x$, AutoGB builds a structure-aware feature vector:
+
+$$
+\phi(x) = \mathrm{Feature}(x; \mathcal{B})
+$$
+
+This transformation may include:
+
+* distance to nearest ball center
+* ball radius
+* local purity $\rho_m$
+* ball size / density
+* other region-level statistics
+
+This step converts raw input into a **granular-structure-aware representation**.
+
+### Meta-Level Prediction
+
+A standard model is applied:
+
+$$
+z(x) = f_\theta(\phi(x))
+$$
+
+where $f_\theta$ can be logistic regression, MLP, or other classifiers.
+
+### Probability Calibration
+
+To improve reliability:
+
+$$
+\hat{p}(x) = g(z(x))
+$$
+
+where $g(\cdot)$ is a calibration function such as sigmoid calibration.
+
+### Selective Prediction
+
+AutoGB supports **selective prediction analysis**:
+
+* samples are ranked by confidence or risk
+* only high-confidence samples are retained
+* performance is evaluated as a function of coverage
+
+This produces a **risk-coverage trade-off curve**, rather than a fixed decision rule.
+
+---
+
+## Highlights
+
+* Parameter-free adaptive partitioning
+* Interpretable region-based representation
+* Risk-aware prediction pipeline
+* Built-in support for selective prediction
+* Fully reproducible notebook prototype
+
+---
+
+## Repository Contents
+
+This repository contains a **single notebook implementation**:
+
+```text
+AutoGB_V4.ipynb
+```
+
+The notebook includes:
+
+* end-to-end pipeline
+* multi-seed evaluation
+* ablation study
+* risk-coverage analysis
+
+---
+
+## How to Run
 
 Install dependencies:
 
@@ -77,62 +180,79 @@ pip install -r requirements.txt
 Open and run:
 
 ```bash
-AutoGB_V4.ipynb
+jupyter notebook AutoGB_V4.ipynb
 ```
 
 ---
 
-## 📈 Experimental Insights
+## Experimental Insights
 
-From the current experiments:
+Current results indicate that:
 
-* AutoGB performs **reasonably well on low-dimensional tabular data**
-* Provides **interpretable local structures**
-* Naturally supports **risk-based rejection**
-* Performance degrades on high-dimensional datasets (e.g., image-like features)
+* AutoGB performs well on **low-dimensional tabular data**
+* provides **interpretable local structure**
+* naturally supports **risk-based rejection**
+
+However:
+
+* performance degrades on **high-dimensional datasets**
+* local Euclidean structure becomes less informative
 
 ---
 
-## 📌 Scope
+## Scope
 
-AutoGB is a **general framework**, not tied to a specific domain.
+AutoGB is a **general framework for tabular learning**, not tied to a specific domain.
 
 Potential applications include:
 
-* healthcare risk assessment
+* healthcare risk modeling
 * predictive maintenance
 * AIOps monitoring
 * anomaly detection
-* financial risk modeling
+* financial risk analysis
 
-> This repository focuses on demonstrating the **framework design**, not domain-specific optimization.
-
----
-
-## ⚠️ Limitations
-
-* Not optimized for high-dimensional feature spaces
-* Heuristic ball-splitting strategy (not learned)
-* Not intended as a SOTA classifier
+This repository focuses on **framework demonstration**, not domain-specific optimization.
 
 ---
 
-## 🔮 Future Work
+## Limitations
 
-* Learned partition strategies
-* Integration with deep representations
-* Conformal prediction / risk control
-* Stronger uncertainty estimation
+* Not suitable for high-dimensional feature spaces
+* Heuristic ball partition strategy
+* Not designed as a SOTA classifier
 
 ---
 
-## 👤 Author
+## Future Work
+
+* learned partition strategies
+* integration with deep representations
+* conformal prediction / risk control
+* stronger uncertainty estimation
+
+---
+
+## Research Positioning
+
+AutoGB is positioned as a **framework-level approach** that connects:
+
+* local structure modeling via granular balls
+* feature-based learning
+* risk-aware prediction
+* selective decision making
+
+It is not a standalone classifier, but a **modular pipeline for interpretable and uncertainty-aware learning**.
+
+---
+
+## Author
 
 Henan Zhao
 
 ---
 
-## 📜 License
+## License
 
 MIT License
 
